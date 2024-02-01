@@ -3,6 +3,8 @@ const { dirname } = require("path");
 const app = express();
 // express 라이브러리 사용하겠다는 뜻
 
+app.use(express.static(__dirname + "/public"));
+
 app.listen(8080, () => {
   console.log("http://localhost:8080 에서 서버 실행중");
 });
