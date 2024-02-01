@@ -43,3 +43,10 @@ app.get("/list", async (요청, 응답) => {
   // 응답.send(result[0].title);
   응답.render("list.ejs", { posts: result });
 });
+
+app.get("/time", (요청, 응답) => {
+  // 응답.send(new Date());
+  응답.render("time.ejs", { time: new Date() });
+});
+
+// new Date()
