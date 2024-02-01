@@ -4,6 +4,7 @@ const app = express();
 // express 라이브러리 사용하겠다는 뜻
 
 app.use(express.static(__dirname + "/public"));
+app.set("view engine", "ejs");
 
 const { MongoClient } = require("mongodb");
 
@@ -39,5 +40,6 @@ app.get("/news", (요청, 응답) => {
 app.get("/list", async (요청, 응답) => {
   let result = await db.collection("post").find().toArray();
   console.log(result[0].title);
-  응답.send(result[0].title);
+  // 응답.send(result[0].title);
+  응답.render("list.ejs", { posts: result });
 });
