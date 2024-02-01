@@ -7,15 +7,14 @@
     <link rel="stylesheet" href="/main.css" />
   </head>
   <body class="grey-bg">
+    <%- include('nav.ejs') %>
     <div class="white-bg">
+      <% for (let i = 0; i < posts.length; i++) { %>
       <div class="list-box">
-        <h4><%= posts[0].title %></h4>
-        <p><%= posts[0].content %></p>
+        <h4><%= posts[i].title %></h4>
+        <p><%= posts[i].content %></p>
       </div>
-      <div class="list-box">
-        <h4><%= posts[1].title %></h4>
-        <p><%= posts[1].content %></p>
-      </div>
+      <% } %>
     </div>
   </body>
 </html>
