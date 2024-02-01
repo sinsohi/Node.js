@@ -36,6 +36,8 @@ app.get("/news", (요청, 응답) => {
   //   응답.send("오늘 비옴"); // 이거 보내주셈
 });
 
-app.get("/about", (요청, 응답) => {
-  응답.sendFile(__dirname + "/index.html"); // 이거 보내주셈
+app.get("/list", async (요청, 응답) => {
+  let result = await db.collection("post").find().toArray();
+  console.log(result[0].title);
+  응답.send(result[0].title);
 });
