@@ -43,7 +43,7 @@ app.get("/news", (요청, 응답) => {
 
 app.get("/list", async (요청, 응답) => {
   let result = await db.collection("post").find().toArray();
-  console.log(result[0].title);
+  // console.log(result[0].title);
   // 응답.send(result[0].title);
   응답.render("list.ejs", { posts: result });
 });
@@ -76,11 +76,11 @@ app.post("/add", async (요청, 응답) => {
 
 app.get("/detail/:id", async (요청, 응답) => {
   try {
-    console.log(요청.params.num);
+    // console.log(요청.params.num);
     let result = await db
       .collection("post")
       .findOne({ _id: new ObjectId(요청.params.id) });
-    console.log(result);
+    // console.log(result);
     if (result == null) {
       응답.status(404).send("URL 입력을 제대로 입력해주세요");
     }
@@ -89,4 +89,23 @@ app.get("/detail/:id", async (요청, 응답) => {
     console.log(e);
     응답.status(404).send("URL 입력을 제대로 입력해주세요");
   }
+});
+
+app.get("/edit/:id", async (요청, 응답) => {
+  let result = await db
+    .collection("post")
+    .findOne({ _id: new ObjectId(요청.params.id) });
+  응답.render("edit.ejs", { result: result });
+});
+
+app.post("/edit/:id", async (요청, 응답) => {
+  db.collection("post").updateOne(
+    { _id: new ObjectId(요청.params.id) },
+    { $set: { title: 요청.body.title, content: 요청.body.content } }
+  );
+
+  let updatedPost = await db
+    .collection("post")
+    .findOne({ _id: new ObjectId(요청.params.id) });
+  응답.render("list.ejs", { posts: updatedPost });
 });
