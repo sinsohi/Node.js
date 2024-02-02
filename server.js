@@ -1,8 +1,10 @@
 const express = require("express");
 const { dirname } = require("path");
 const app = express();
+const methodOverride = require("method-override");
 // express 라이브러리 사용하겠다는 뜻
 
+app.use(methodOverride("_method"));
 app.use(express.static(__dirname + "/public"));
 app.set("view engine", "ejs");
 
@@ -98,13 +100,14 @@ app.get("/edit/:id", async (요청, 응답) => {
   응답.render("edit.ejs", { result: result });
 });
 
-app.post("/edit", async (요청, 응답) => {
-  let result = await db
-    .collection("post")
-    .updateOne(
-      { _id: new ObjectId(요청.body.id) },
-      { $set: { title: 요청.body.title, content: 요청.body.content } }
-    );
+app.put("/edit", async (요청, 응답) => {
+  await db.collection("post").updateOne({ _id: 1 }, { $inc: { like: 1 } });
+  // let result = await db
+  //   .collection("post")
+  //   .updateOne(
+  //     { _id: new ObjectId(요청.body.id) },
+  //     { $set: { title: 요청.body.title, content: 요청.body.content } }
+  //   );
 
-  응답.redirect("/list");
+  // 응답.redirect("/list");
 });
