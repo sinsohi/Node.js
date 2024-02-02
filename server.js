@@ -56,7 +56,20 @@ app.get("/write", (요청, 응답) => {
   응답.render("write.ejs");
 });
 
-app.post("/add", (요청, 응답) => {
+app.post("/add", async (요청, 응답) => {
   console.log(요청.body);
-  db.collection("post").insertOne(요청.body);
+
+  try {
+    if (요청.body.title != "" && 요청.body.content != "") {
+      await db
+        .collection("post")
+        .insertOne({ title: 요청.body.title, content: 요청.body.content });
+      응답.redirect("/list"); //유저를 다른 페이지로 이동
+    } else {
+      응답.send("제목과 내용 모두 적어주세요");
+    }
+  } catch (e) {
+    console.log(e);
+    응답.status(500).send("서버 에러남");
+  }
 });
