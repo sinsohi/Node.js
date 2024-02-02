@@ -74,11 +74,19 @@ app.post("/add", async (요청, 응답) => {
   }
 });
 
-app.get("/detail/:num", async (요청, 응답) => {
-  console.log(요청.params.num);
-  let result = await db
-    .collection("post")
-    .findOne({ _id: new ObjectId(요청.params.num) });
-  console.log(result);
-  응답.render("detail.ejs", { ShowDetail: result });
+app.get("/detail/:id", async (요청, 응답) => {
+  try {
+    console.log(요청.params.num);
+    let result = await db
+      .collection("post")
+      .findOne({ _id: new ObjectId(요청.params.id) });
+    console.log(result);
+    if (result == null) {
+      응답.status(404).send("URL 입력을 제대로 입력해주세요");
+    }
+    응답.render("detail.ejs", { ShowDetail: result });
+  } catch (e) {
+    console.log(e);
+    응답.status(404).send("URL 입력을 제대로 입력해주세요");
+  }
 });

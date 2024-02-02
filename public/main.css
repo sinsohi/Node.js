@@ -65,3 +65,7 @@ div {
   padding: 15px;
   margin-top: 10px;
 }
+
+a {
+  text-decoration: none;
+}
