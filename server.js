@@ -98,14 +98,13 @@ app.get("/edit/:id", async (요청, 응답) => {
   응답.render("edit.ejs", { result: result });
 });
 
-app.post("/edit/:id", async (요청, 응답) => {
-  db.collection("post").updateOne(
-    { _id: new ObjectId(요청.params.id) },
-    { $set: { title: 요청.body.title, content: 요청.body.content } }
-  );
-
-  let updatedPost = await db
+app.post("/edit", async (요청, 응답) => {
+  let result = await db
     .collection("post")
-    .findOne({ _id: new ObjectId(요청.params.id) });
-  응답.render("list.ejs", { posts: updatedPost });
+    .updateOne(
+      { _id: new ObjectId(요청.body.id) },
+      { $set: { title: 요청.body.title, content: 요청.body.content } }
+    );
+
+  응답.redirect("/list");
 });
