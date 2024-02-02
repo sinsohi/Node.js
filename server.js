@@ -10,7 +10,7 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 let db;
 const url =
@@ -72,4 +72,13 @@ app.post("/add", async (요청, 응답) => {
     console.log(e);
     응답.status(500).send("서버 에러남");
   }
+});
+
+app.get("/detail/:num", async (요청, 응답) => {
+  console.log(요청.params.num);
+  let result = await db
+    .collection("post")
+    .findOne({ _id: new ObjectId(요청.params.num) });
+  console.log(result);
+  응답.render("detail.ejs", { ShowDetail: result });
 });
