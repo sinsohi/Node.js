@@ -14,6 +14,7 @@
         <h4>
           <a href="/detail/<%=posts[i]._id%>"><%= posts[i].title %></a>
           <a href="/edit/<%=posts[i]._id%>">✏️</a>
+          <span class="delete" data-id="<%=posts[i]._id%>">🗑️</span>
         </h4>
         <p><%= posts[i].content %></p>
       </div>
@@ -21,3 +22,15 @@
     </div>
   </body>
 </html>
+
+<script>
+  document
+    .querySelectorAll(".delete")[0]
+    .addEventListener("click", function (e) {
+      console.log(e.target.dataset.id);
+      fetch("/delete?docid=" + e.target.dataset.id, {
+        method: "DELETE",
+      });
+      // 새로고침 없이 POST 요청 해줌
+    });
+</script>

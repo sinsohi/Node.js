@@ -101,13 +101,25 @@ app.get("/edit/:id", async (요청, 응답) => {
 });
 
 app.put("/edit", async (요청, 응답) => {
-  await db.collection("post").updateOne({ _id: 1 }, { $inc: { like: 1 } });
-  // let result = await db
-  //   .collection("post")
-  //   .updateOne(
-  //     { _id: new ObjectId(요청.body.id) },
-  //     { $set: { title: 요청.body.title, content: 요청.body.content } }
-  //   );
+  // await db.collection("post").updateOne({ _id: 1 }, { $inc: { like: 1 } });
+  let result = await db
+    .collection("post")
+    .updateOne(
+      { _id: new ObjectId(요청.body.id) },
+      { $set: { title: 요청.body.title, content: 요청.body.content } }
+    );
 
-  // 응답.redirect("/list");
+  응답.redirect("/list");
+});
+
+app.post("/abc", (응답, 요청) => {
+  console.log("안녕2");
+  console.log(요청.body);
+  console.log(요청.query);
+});
+
+app.delete("/delete", (요청, 응답) => {
+  console.log(요청.query);
+  db.collection("post").deleteOne({ _id: new ObjectId(요청.query.docid) });
+  // db에 있던 document 삭제하기 ~
 });
