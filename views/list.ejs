@@ -20,17 +20,33 @@
       </div>
       <% } %>
     </div>
+    <a href="/write"><button>글쓰기</button></a>
+    <a href="/list/1"><button>1</button></a>
+    <a href="/list/2"><button>2</button></a>
+    <a href="/list/3"><button>3</button></a>
+
+    <a href="/list/next/<%=posts[posts.length-1]._id%>"
+      ><button>다음</button></a
+    >
   </body>
 </html>
 
 <script>
-  document
-    .querySelectorAll(".delete")[0]
-    .addEventListener("click", function (e) {
-      console.log(e.target.dataset.id);
-      fetch("/delete?docid=" + e.target.dataset.id, {
-        method: "DELETE",
+  console.log("<%= posts.length%>");
+  for (let i = 0; i < "<%= posts.length%>"; i++) {
+    document
+      .querySelectorAll(".delete")
+      [i].addEventListener("click", function (e) {
+        console.log(e.target.dataset.id);
+        fetch("/delete?docid=" + e.target.dataset.id, {
+          method: "DELETE",
+        })
+          .then((r) => r.text()) // 서버가 보내는 게 문자일 경우 .text / array나 object인 경우 .json
+          .then(
+            (r) => (e.target.parentElement.parentElement.style.display = "none")
+          );
+
+        // 새로고침 없이 POST 요청 해줌
       });
-      // 새로고침 없이 POST 요청 해줌
-    });
+  }
 </script>
