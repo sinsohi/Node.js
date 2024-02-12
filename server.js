@@ -11,8 +11,23 @@ app.set("view engine", "ejs");
 // 요청.body 쓰려면 이거 필요
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 const { MongoClient, ObjectId } = require("mongodb");
+
+// passport 라이브러리 셋팅
+const session = require("express-session");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+
+app.use(passport.initialize());
+app.use(
+  session({
+    secret: "암호화에 쓸 비번",
+    resave: false, // 유저가 서버로 요청할 때마다 세션 갱신할건지
+    saveUninitialized: false, // 로그인 안해도 세션 만들것인지
+  })
+);
+
+app.use(passport.session());
 
 let db;
 const url =
@@ -142,4 +157,39 @@ app.get("/list/next/:id", async (요청, 응답) => {
     .limit(5)
     .toArray();
   응답.render("list.ejs", { posts: result });
+});
+
+// 제출한 아이디/비번 검사 -> passport.authenticate('local')() 쓰면 실행됨
+passport.use(
+  new LocalStrategy(async (입력한아이디, 입력한비번, cb) => {
+    let result = await db
+      .collection("user")
+      .findOne({ username: 입력한아이디 });
+    if (!result) {
+      return cb(null, false, { message: "아이디 DB에 없음" });
+    }
+    if (result.password == 입력한비번) {
+      return cb(null, result);
+    } else {
+      return cb(null, false, { message: "비번불일치" });
+    }
+  })
+);
+
+app.get("/login", (요청, 응답) => {
+  응답.render("login.ejs");
+});
+
+app.post("/login", async (요청, 응답, next) => {
+  passport.authenticate("local", (error, user, info) => {
+    if (error) return 응답.status(500).json(error);
+    if (!user) return 응답.status(401).json(info.message);
+    요청.logIn(user, (err) => {
+      // 실행하면 세션 만들어줌
+      if (err) return next(err);
+      응답.redirect("/");
+    });
+  })(요청, 응답, next);
+
+  응답.render("login.ejs");
 });
