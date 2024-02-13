@@ -3,6 +3,8 @@ const { dirname } = require("path");
 const app = express();
 const methodOverride = require("method-override");
 // express 라이브러리 사용하겠다는 뜻
+const bcrypt = require("bcrypt"); // bcrypt 셋팅 (for hashing)
+const MongoStore = require("connect-mongo"); // connect-mongo 셋팅
 
 app.use(methodOverride("_method"));
 app.use(express.static(__dirname + "/public"));
@@ -25,6 +27,11 @@ app.use(
     resave: false, // 유저가 서버로 요청할 때마다 세션 갱신할건지
     saveUninitialized: false, // 로그인 안해도 세션 만들것인지
     cookie: { maxAge: 60 * 60 * 1000 }, // 세션 document 유효기간 변경
+    store: MongoStore.create({
+      mongoUrl:
+        "mongodb+srv://sosin_303:tlsthgml4033!@cluster0.zrw2oxx.mongodb.net/?retryWrites=true&w=majority",
+      dbName: "forum",
+    }),
   })
 );
 
@@ -169,7 +176,8 @@ passport.use(
     if (!result) {
       return cb(null, false, { message: "아이디 DB에 없음" });
     }
-    if (result.password == 입력한비번) {
+
+    if (await bcrypt.compare(입력한비번, result.password)) {
       return cb(null, result);
     } else {
       return cb(null, false, { message: "비번불일치" });
@@ -186,7 +194,7 @@ passport.serializeUser((user, done) => {
   });
 });
 
-// 유저가 보낸 쿠키 분석
+// 유저가 보낸 쿠키 분석 (세션 정보 적힌 쿠키 가지고 있는 유저가 요청 날릴 때마다 실행됨)
 passport.deserializeUser(async (user, done) => {
   let result = await db
     .collection("user")
@@ -212,4 +220,18 @@ app.post("/login", async (요청, 응답, next) => {
       응답.redirect("/");
     });
   })(요청, 응답, next);
+});
+
+app.get("/register", (요청, 응답) => {
+  응답.render("register.ejs");
+});
+
+app.post("/register", async (요청, 응답) => {
+  let 해시 = await bcrypt.hash(요청.body.password, 10);
+  console.log(해시);
+  await db.collection("user").insertOne({
+    username: 요청.body.username,
+    password: 해시,
+  });
+  응답.redirect("/");
 });
