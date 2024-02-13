@@ -24,6 +24,7 @@ app.use(
     secret: "암호화에 쓸 비번",
     resave: false, // 유저가 서버로 요청할 때마다 세션 갱신할건지
     saveUninitialized: false, // 로그인 안해도 세션 만들것인지
+    cookie: { maxAge: 60 * 60 * 1000 }, // 세션 document 유효기간 변경
   })
 );
 
@@ -176,7 +177,28 @@ passport.use(
   })
 );
 
+// 로그인시 세션 만들기 (요청.logIn() 쓰면 자동 실행됨)
+passport.serializeUser((user, done) => {
+  // console.log(user);
+  process.nextTick(() => {
+    // 내부 코드를 비동기적으로 처리해줌
+    done(null, { id: user._id, username: user.username });
+  });
+});
+
+// 유저가 보낸 쿠키 분석
+passport.deserializeUser(async (user, done) => {
+  let result = await db
+    .collection("user")
+    .findOne({ _id: new ObjectId(user.id) });
+  delete result.password;
+  process.nextTick(() => {
+    done(null, result); // result : 요청.user에 들어감
+  });
+});
+
 app.get("/login", (요청, 응답) => {
+  console.log(요청.user);
   응답.render("login.ejs");
 });
 
@@ -190,6 +212,4 @@ app.post("/login", async (요청, 응답, next) => {
       응답.redirect("/");
     });
   })(요청, 응답, next);
-
-  응답.render("login.ejs");
 });
