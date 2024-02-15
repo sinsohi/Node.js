@@ -21,6 +21,27 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
+const { S3Client } = require("@aws-sdk/client-s3");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+const s3 = new S3Client({
+  region: "ap-northeast-2",
+  credentials: {
+    accessKeyId: process.env.S3_KEY,
+    secretAccessKey: process.env.S3_SECRET,
+  },
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "sinsohiforum",
+    key: function (요청, file, cb) {
+      cb(null, Date.now().toString()); //업로드시 파일명 변경가능
+    },
+  }),
+});
+
 app.use(passport.initialize());
 app.use(
   session({
@@ -121,22 +142,26 @@ app.get("/write", (요청, 응답) => {
   응답.render("write.ejs");
 });
 
-app.post("/add", async (요청, 응답) => {
-  console.log(요청.body);
-
-  try {
-    if (요청.body.title != "" && 요청.body.content != "") {
-      await db
-        .collection("post")
-        .insertOne({ title: 요청.body.title, content: 요청.body.content });
-      응답.redirect("/list"); //유저를 다른 페이지로 이동
-    } else {
-      응답.send("제목과 내용 모두 적어주세요");
+app.post("/add", (요청, 응답) => {
+  // name="img1" 가진 이미지 들어오면 S3에 자동 업로드
+  upload.single("img1")(요청, 응답, async (err) => {
+    if (err) return 응답.send("UploadErr");
+    try {
+      if (요청.body.title != "" && 요청.body.content != "") {
+        await db.collection("post").insertOne({
+          title: 요청.body.title,
+          content: 요청.body.content,
+          img: 요청.file.location,
+        });
+        응답.redirect("/list"); //유저를 다른 페이지로 이동
+      } else {
+        응답.send("제목과 내용 모두 적어주세요");
+      }
+    } catch (e) {
+      console.log(e);
+      응답.status(500).send("서버 에러남");
     }
-  } catch (e) {
-    console.log(e);
-    응답.status(500).send("서버 에러남");
-  }
+  });
 });
 
 app.get("/detail/:id", async (요청, 응답) => {

@@ -8,13 +8,18 @@
   </head>
   <body class="grey-bg">
     <%- include('nav.ejs') %>
-   <form class="form-box" action="/edit?_method=PUT" method="POST">
+   <form class="form-box" action="/edit?_method=PUT" method="POST" enctype="multipart/form-data">
     <h4>수정하기</h4>
     <input name="id" value="<%= result._id %>" style="display:none">
     <input name="title" value="<%= result.title %>">
     <input name="content" value="<%= result.content %>">
+        <input type="file" name="img1" accept="image/*" value="<%= result.img %>">
+
     <button type="submit">전송</button>
 </form> 
     </div>
   </body>
 </html>
+
+
+
