@@ -58,10 +58,10 @@ app.use(
 
 app.use(passport.session());
 
+let connectDB = require("./database.js");
+
 let db;
-const url = process.env.DB_URL;
-new MongoClient(url)
-  .connect()
+connectDB
   .then((client) => {
     console.log("DB연결성공");
     db = client.db("forum");
@@ -269,3 +269,6 @@ passport.deserializeUser(async (user, done) => {
     done(null, result); // result : 요청.user에 들어감
   });
 });
+
+app.use("/shop", require("./routes/shop.js"));
+app.use("/board/sub", require("./routes/board.js"));
