@@ -6,6 +6,7 @@ body {
   padding: 15px;
   align-items: center;
   background: white;
+  margin-bottom: 20px;
 }
 .nav a {
   margin-right: 10px;
@@ -68,4 +69,17 @@ div {
 
 a {
   text-decoration: none;
+}
+
+.search {
+  margin-left: 20px;
+  padding: 5px;
+}
+
+.search-send {
+  padding: 6px 10px;
+  background-color: lightgray;
+  border: none;
+  border-radius: 5px;
+  vertical-align: middle;
 }

@@ -21,6 +21,8 @@
         });
     </script>
 
+    <h4>검색결과</h4>
+
     <div class="white-bg">
       <% for (let i = 0; i < posts.length; i++) { %>
       <div class="list-box">
@@ -45,7 +47,6 @@
 </html>
 
 <script>
-  console.log("<%= posts.length%>");
   for (let i = 0; i < "<%= posts.length%>"; i++) {
     document
       .querySelectorAll(".delete")

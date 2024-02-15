@@ -272,3 +272,12 @@ passport.deserializeUser(async (user, done) => {
 
 app.use("/shop", require("./routes/shop.js"));
 app.use("/board/sub", require("./routes/board.js"));
+
+app.get("/search", async (요청, 응답) => {
+  console.log(요청.query.val);
+  let result = await db
+    .collection("post")
+    .find({ title: { $regex: 요청.query.val } }) // 정규식
+    .toArray();
+  응답.render("search.ejs", { posts: result });
+});
