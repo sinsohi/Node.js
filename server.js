@@ -5,6 +5,7 @@ const methodOverride = require("method-override");
 // express 라이브러리 사용하겠다는 뜻
 const bcrypt = require("bcrypt"); // bcrypt 셋팅 (for hashing)
 const MongoStore = require("connect-mongo"); // connect-mongo 셋팅
+require("dotenv").config();
 
 app.use(methodOverride("_method"));
 app.use(express.static(__dirname + "/public"));
@@ -28,8 +29,7 @@ app.use(
     saveUninitialized: false, // 로그인 안해도 세션 만들것인지
     cookie: { maxAge: 60 * 60 * 1000 }, // 세션 document 유효기간 변경
     store: MongoStore.create({
-      mongoUrl:
-        "mongodb+srv://sosin_303:tlsthgml4033!@cluster0.zrw2oxx.mongodb.net/?retryWrites=true&w=majority",
+      mongoUrl: process.env.DB_URL,
       dbName: "forum",
     }),
   })
@@ -38,15 +38,14 @@ app.use(
 app.use(passport.session());
 
 let db;
-const url =
-  "mongodb+srv://sosin_303:tlsthgml4033!@cluster0.zrw2oxx.mongodb.net/?retryWrites=true&w=majority";
+const url = process.env.DB_URL;
 new MongoClient(url)
   .connect()
   .then((client) => {
     console.log("DB연결성공");
     db = client.db("forum");
 
-    app.listen(8080, () => {
+    app.listen(process.env.PORT, () => {
       console.log("http://localhost:8080 에서 서버 실행중");
     });
   })
@@ -58,6 +57,47 @@ app.get("/", (요청, 응답) => {
   // 누가 메인페이지 접속시
   응답.sendFile(__dirname + "/index.html"); // server.js 담긴 폴더
 });
+
+app.get("/login", (요청, 응답) => {
+  console.log(요청.user);
+  응답.render("login.ejs");
+});
+
+app.post("/login", async (요청, 응답, next) => {
+  passport.authenticate("local", (error, user, info) => {
+    if (error) return 응답.status(500).json(error);
+    if (!user) return 응답.status(401).json(info.message);
+    요청.logIn(user, (err) => {
+      // 실행하면 세션 만들어줌
+      if (err) return next(err);
+      응답.redirect("/");
+    });
+  })(요청, 응답, next);
+});
+
+app.get("/register", (요청, 응답) => {
+  응답.render("register.ejs");
+});
+
+app.post("/register", async (요청, 응답) => {
+  let 해시 = await bcrypt.hash(요청.body.password, 10);
+  console.log(해시);
+  await db.collection("user").insertOne({
+    username: 요청.body.username,
+    password: 해시,
+  });
+  응답.redirect("/");
+});
+
+function checkLogin(요청, 응답, next) {
+  // 미들웨어
+  if (!요청.user) {
+    응답.send("로그인하세요"); // 응답해버리면 남은 코드 실행 안되기 때문에 next()
+  }
+  next();
+}
+
+app.use(checkLogin); // 여기 밑에 있는 모든 API는 checkLogin 미들웨어 적용됨
 
 app.get("/news", (요청, 응답) => {
   db.collection("post").insertOne({
@@ -203,35 +243,4 @@ passport.deserializeUser(async (user, done) => {
   process.nextTick(() => {
     done(null, result); // result : 요청.user에 들어감
   });
-});
-
-app.get("/login", (요청, 응답) => {
-  console.log(요청.user);
-  응답.render("login.ejs");
-});
-
-app.post("/login", async (요청, 응답, next) => {
-  passport.authenticate("local", (error, user, info) => {
-    if (error) return 응답.status(500).json(error);
-    if (!user) return 응답.status(401).json(info.message);
-    요청.logIn(user, (err) => {
-      // 실행하면 세션 만들어줌
-      if (err) return next(err);
-      응답.redirect("/");
-    });
-  })(요청, 응답, next);
-});
-
-app.get("/register", (요청, 응답) => {
-  응답.render("register.ejs");
-});
-
-app.post("/register", async (요청, 응답) => {
-  let 해시 = await bcrypt.hash(요청.body.password, 10);
-  console.log(해시);
-  await db.collection("user").insertOne({
-    username: 요청.body.username,
-    password: 해시,
-  });
-  응답.redirect("/");
 });
