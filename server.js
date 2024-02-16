@@ -7,6 +7,11 @@ const bcrypt = require("bcrypt"); // bcrypt 셋팅 (for hashing)
 const MongoStore = require("connect-mongo"); // connect-mongo 셋팅
 require("dotenv").config();
 
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const server = createServer(app);
+const io = new Server(server);
+
 app.use(methodOverride("_method"));
 app.use(express.static(__dirname + "/public")); // 특정 폴더의 파일들 전송가능
 app.set("view engine", "ejs");
@@ -59,6 +64,7 @@ app.use(
 app.use(passport.session());
 
 let connectDB = require("./database.js");
+const { Socket } = require("dgram");
 
 let db;
 connectDB
@@ -66,7 +72,7 @@ connectDB
     console.log("DB연결성공");
     db = client.db("forum");
 
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log("http://localhost:8080 에서 서버 실행중");
     });
   })
@@ -338,4 +344,20 @@ app.get("/chat/detail/:id", async (요청, 응답) => {
     _id: new ObjectId(요청.params.id),
   });
   응답.render("chatDetail.ejs", { result: result });
+});
+
+// 유저가 웹소켓 연결시 서버에서 코드 실행하려면
+io.on("connection", (socket) => {
+  console.log("웹소켓 연결함");
+  socket.on("ask-join", (data) => {
+    // 데이터 수신하려면 socket.on()
+    socket.join(data);
+    console.log("유저가 보낸거 ", data);
+    io.emit("name", "sin"); // 모든 유저에게 전송중
+  });
+
+  socket.on("message", (data) => {
+    console.log(data);
+    io.to(data.room).emit("broadcast", data.msg);
+  });
 });
