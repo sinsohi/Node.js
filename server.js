@@ -275,9 +275,20 @@ app.use("/board/sub", require("./routes/board.js"));
 
 app.get("/search", async (요청, 응답) => {
   console.log(요청.query.val);
+  let 검색조건 = [
+    {
+      $search: {
+        index: "title_index",
+        text: { query: 요청.query.val, path: "title" },
+      },
+    },
+    { $sort: { _id: 1 } },
+    { $limit: 10 },
+    { $project: { content: 0 } }, // 필드 숨기기
+  ];
   let result = await db
     .collection("post")
-    .find({ $text: { $search: 요청.query.val } })
+    .aggregate(검색조건) // search index
     .toArray();
   응답.render("search.ejs", { posts: result });
 });
