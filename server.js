@@ -168,15 +168,22 @@ app.post("/add", (요청, 응답) => {
 
 app.get("/detail/:id", async (요청, 응답) => {
   try {
-    // console.log(요청.params.num);
     let result = await db
       .collection("post")
       .findOne({ _id: new ObjectId(요청.params.id) });
-    // console.log(result);
+
+    let comment = await db
+      .collection("comment")
+      .find({ parentId: new ObjectId(요청.params.id) })
+      .toArray();
+    console.log(comment);
+
+    // 예외 처리
     if (result == null) {
       응답.status(404).send("URL 입력을 제대로 입력해주세요");
     }
-    응답.render("detail.ejs", { ShowDetail: result });
+
+    응답.render("detail.ejs", { ShowDetail: result, ShowComment: comment });
   } catch (e) {
     console.log(e);
     응답.status(404).send("URL 입력을 제대로 입력해주세요");
@@ -296,4 +303,14 @@ app.get("/search", async (요청, 응답) => {
     .aggregate(검색조건) // search index
     .toArray();
   응답.render("search.ejs", { posts: result });
+});
+
+app.post("/comment", async (요청, 응답) => {
+  let result = await db.collection("comment").insertOne({
+    content: 요청.body.content,
+    writerId: new ObjectId(요청.user._id),
+    writer: 요청.user.username,
+    parentId: new ObjectId(요청.body.parentId),
+  });
+  응답.redirect("back");
 });

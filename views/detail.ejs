@@ -13,6 +13,26 @@
       <h4><%=ShowDetail.title%></h4>
       <p><%= ShowDetail.content %></p>
       <img src="<%= ShowDetail.img %>" />
+
+      <hr style="margin-top: 60px" />
+      <div>
+        <% for (let i = 0; i < ShowComment.length; i++) { %>
+
+        <p>
+          <strong><%=ShowComment[i].writer%></strong>
+          <%=ShowComment[i].content%>
+        </p>
+        <% } %>
+      </div>
+      <form action="/comment" method="POST">
+        <input name="content" />
+        <input
+          name="parentId"
+          value="<%= ShowDetail._id %>"
+          style="display: none"
+        />
+        <button type="submit">댓글작성</button>
+      </form>
     </div>
   </body>
 </html>
