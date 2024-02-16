@@ -151,7 +151,9 @@ app.post("/add", (요청, 응답) => {
         await db.collection("post").insertOne({
           title: 요청.body.title,
           content: 요청.body.content,
-          img: 요청.file.location,
+          img: 요청.file ? 요청.location : "",
+          user: 요청.user._id,
+          username: 요청.user.username,
         });
         응답.redirect("/list"); //유저를 다른 페이지로 이동
       } else {
@@ -206,11 +208,14 @@ app.post("/abc", (응답, 요청) => {
   console.log(요청.query);
 });
 
+// db에 있던 document 삭제하기 ~
 app.delete("/delete", (요청, 응답) => {
   console.log(요청.query);
-  db.collection("post").deleteOne({ _id: new ObjectId(요청.query.docid) });
-  // db에 있던 document 삭제하기 ~
-  응답.send("삭제 완료");
+  db.collection("post").deleteOne({
+    _id: new ObjectId(요청.query.docid), // 유저가 보낸 document id
+    user: new ObjectId(요청.user._id),
+  }),
+    응답.send("삭제 완료");
 });
 
 app.get("/list/:id", async (요청, 응답) => {
