@@ -277,7 +277,7 @@ app.get("/search", async (요청, 응답) => {
   console.log(요청.query.val);
   let result = await db
     .collection("post")
-    .find({ title: { $regex: 요청.query.val } }) // 정규식
+    .find({ $text: { $search: 요청.query.val } })
     .toArray();
   응답.render("search.ejs", { posts: result });
 });
