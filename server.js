@@ -8,7 +8,7 @@ const MongoStore = require("connect-mongo"); // connect-mongo 셋팅
 require("dotenv").config();
 
 app.use(methodOverride("_method"));
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(__dirname + "/public")); // 특정 폴더의 파일들 전송가능
 app.set("view engine", "ejs");
 
 // 요청.body 쓰려면 이거 필요
@@ -313,4 +313,29 @@ app.post("/comment", async (요청, 응답) => {
     parentId: new ObjectId(요청.body.parentId),
   });
   응답.redirect("back");
+});
+
+app.get("/chat/request", async (요청, 응답) => {
+  db.collection("chatroom").insertOne({
+    member: [요청.user._id, new ObjectId(요청.query.writerId)],
+    date: new Date(),
+  });
+});
+
+app.get("/chat/list", async (요청, 응답) => {
+  let result = await db
+    .collection("chatroom")
+    .find({
+      member: 요청.user._id,
+    })
+    .toArray();
+  console.log(result);
+  응답.render("chatList.ejs", { result: result });
+});
+
+app.get("/chat/detail/:id", async (요청, 응답) => {
+  let result = await db.collection("chatroom").findOne({
+    _id: new ObjectId(요청.params.id),
+  });
+  응답.render("chatDetail.ejs", { result: result });
 });
