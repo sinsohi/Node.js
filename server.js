@@ -349,15 +349,14 @@ app.get("/chat/detail/:id", async (요청, 응답) => {
 // 유저가 웹소켓 연결시 서버에서 코드 실행하려면
 io.on("connection", (socket) => {
   console.log("웹소켓 연결함");
+
   socket.on("ask-join", (data) => {
     // 데이터 수신하려면 socket.on()
-    socket.join(data);
-    console.log("유저가 보낸거 ", data);
-    io.emit("name", "sin"); // 모든 유저에게 전송중
+    socket.join(data); // 유저 방에다 넣기
   });
 
-  socket.on("message", (data) => {
-    console.log(data);
-    io.to(data.room).emit("broadcast", data.msg);
+  socket.on("message-send", async (data) => {
+    console.log("유저가 보낸거 : ", data);
+    io.to(data.room).emit("message-broadcast", data.msg);
   });
 });

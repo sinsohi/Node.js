@@ -23,20 +23,29 @@
     <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.2/client-dist/socket.io.min.js"></script>
     <script>
       const socket = io();
-      socket.emit("ask-join", "1");
+      socket.emit("ask-join", "<%= result._id %>");
       socket.on("name", (data) => {
         console.log("서버가 보낸거", data);
-      });
-
-      socket.on("broadcast", (data) => {
-        console.log(data);
       });
 
       document
         .querySelector(".chat-button")
         .addEventListener("click", function () {
-          socket.emit("message", { msg: "반가워", room: "1" });
+          let 입력한거 = document.querySelector(".chat-input").value;
+          socket.emit("message-send", {
+            msg: 입력한거,
+            room: "<%= result._id %>",
+          });
         });
+
+      socket.on("message-broadcast", (data) => {
+        document
+          .querySelector(".chat-screen")
+          .insertAdjacentHTML(
+            "beforeend",
+            `<div class="chat-box"><span>${data}</span></div>`
+          );
+      });
     </script>
   </body>
 </html>
