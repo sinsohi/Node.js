@@ -67,10 +67,14 @@ let connectDB = require("./database.js");
 const { Socket } = require("dgram");
 
 let db;
+let changeStream;
 connectDB
   .then((client) => {
     console.log("DB연결성공");
     db = client.db("forum");
+
+    const 찾을문서 = [{ $match: { operationType: "insert" } }];
+    let changeStream = db.collection("post").watch(찾을문서);
 
     server.listen(process.env.PORT, () => {
       console.log("http://localhost:8080 에서 서버 실행중");
@@ -361,15 +365,16 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/stream/list", (요청, 응답) => {
+app.get("/stream/post", (요청, 응답) => {
   응답.writeHead(200, {
     Connection: "keep-alive",
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
   });
 
-  setInterval(() => {
+  changeStream.on("change", (result) => {
+    console.log("DB변동생김");
     응답.write("event: msg\n");
-    응답.write("data: 바보\n\n");
-  }, 1000);
+    응답.write(`data: ${JSON.stringify(result.fullDocument)}\n\n`);
+  });
 });
