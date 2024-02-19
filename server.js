@@ -360,3 +360,16 @@ io.on("connection", (socket) => {
     io.to(data.room).emit("message-broadcast", data.msg);
   });
 });
+
+app.get("/stream/list", (요청, 응답) => {
+  응답.writeHead(200, {
+    Connection: "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+  });
+
+  setInterval(() => {
+    응답.write("event: msg\n");
+    응답.write("data: 바보\n\n");
+  }, 1000);
+});

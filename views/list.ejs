@@ -62,4 +62,10 @@
         // 새로고침 없이 POST 요청 해줌
       });
   }
+
+  // Sever sent event
+  let eventSource = new EventSource("/stream/list");
+  eventSource.addEventListener("msg", function (e) {
+    console.log(e.data);
+  });
 </script>
